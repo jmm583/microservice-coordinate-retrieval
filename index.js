@@ -21,6 +21,10 @@ if (!USER_AGENT) {
 app.use(cors()); // this is needed to allow cross-origin requests from the React app
 app.use(express.json());
 
+// Simple Cache. Usage policy results in IP Blocking, results
+// Need to be cached.
+const cache = new Map();
+
 // Health check to confirm the service is in running and in good health
 app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
@@ -33,6 +37,16 @@ app.get('/geocode', async (req, res) => {
   // Validation: Query must exist, must be a string, and cannot be blank
   if (!query || typeof query !== 'string' || query.trim().length === 0) {
     return res.status(400).json({ error: "Missing or invalid query parameter." });
+  }
+
+  if (query.length > 200) {
+    return res.status(400).json({ error: "Query parameter is too long. Maximum length is 200 characters." });
+  }
+
+  // Serve repeat lookup without calling Nominatim again
+  const key = query.trim().toLowerCase();
+  if (cache.has(key)) {
+    return res.json(cache.get(key));
   }
 
   // In the case a request to Nominatim stalls out
@@ -58,6 +72,10 @@ app.get('/geocode', async (req, res) => {
 
     const data = await response.json();
 
+    if (!Array.isArray(data)) {
+      return res.status(502).json({ error: 'GGeocoding provider returned unexpected response.' });
+    }
+
     if (data.length === 0) {
       return res.status(404).json({ error: 'No coordinates found for that location.' });
     }
@@ -81,5 +99,11 @@ app.get('/geocode', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch geocoding data.'});
   }
 });
+
+
+// Unknown Routes: JSON, not Express's default HTML
+app.use((req, res) => {
+  res.status(500).json({ error: 'Endpoint not found.'})
+})
 
 app.listen(PORT, () => console.log(`Geocoder running on port ${PORT}`));
