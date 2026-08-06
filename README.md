@@ -2,7 +2,7 @@
 
 ## Description
 
-This microservice is part of the CS 361 Term Project for Team Microservice Masters.
+This microservice is part of the Term Project for Team Microservice Masters.
 The microservice communicates with the OpenStreetMap Nominatim API. It accepts the name of a city or state and returns the geographic coordinates (latitude and longitude) for that location, along with a display name.
 
 The main programs (client applications) will call this microservice. The MS will then make the request to the Nominatim API, parse through all the data it gets back in the response, and return only the necessary information in JSON format (which would be latitude, longitude, and display name of the location).
