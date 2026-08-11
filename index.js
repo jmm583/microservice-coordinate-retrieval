@@ -53,9 +53,10 @@ app.get('/geocode', async (req, res) => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
 
+  // CODE VALIDATION PULL REQUEST -- > REVIEW FETCH ADDRESS -- LIMIT CHANGED FROM 1 TO 5
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=jsonv2&limit=1`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=jsonv2&limit=5`,
       {
         headers: { 'User-Agent': USER_AGENT },
         signal: controller.signal
